@@ -1,0 +1,8 @@
+# Requirements to build a package
+wheel
+setuptools
+twine
+
+# Requirements by library
+pyserial
+ 
