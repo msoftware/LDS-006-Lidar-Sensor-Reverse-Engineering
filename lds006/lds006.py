@@ -85,11 +85,13 @@ class LDSSerialManager(object):
             elif index >= self.NUM_OF_ENTRIES:
                 index = self.NUM_OF_ENTRIES - 1
         return index
+
     # Return data from internal array
     def getItem(self, index=slice(0,359)):
         self._has_received_data.wait()
         index = self._correct_index(index)
         return self._data[index]
+
     # Return data from internal array in bracket-representation
     def __getitem__(self, index):
         self._has_received_data.wait()

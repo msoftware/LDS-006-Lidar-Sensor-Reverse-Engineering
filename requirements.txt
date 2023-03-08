@@ -6,3 +6,5 @@ twine
 # Requirements by library
 pyserial
  
+# Requirements by the example application
+flask
