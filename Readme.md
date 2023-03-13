@@ -15,13 +15,15 @@ green: UART RX (3v3, Pin 8 @ RPI)
 
 In this directory: setup a Virtual Environment, then install library
 ```
-sudo apt-get install python3-venv
+sudo apt-get install python3-venv python3-numpy
 python3 -m venv ./venv
 . venv/bin/activate
 pip install -r requirements.txt
 python setup.py bdist_wheel
 pip install dist/lds006*.whl
 ```
+
+Numpy is used as a system requirement because RPI lacks libraries when installing via pip.
 
 ## How to use  library
 
