@@ -125,9 +125,9 @@ class LDSSerialManager(object):
         while True:
             self.__has_new__data.wait()
             self.__has_new__data.clear()
-            #self.__data2 = self.__filter_value(self.__data)
+            self.__data2 = self.__filter_value(self.__data)
             for cb in self.__cb:
-                self.__cb[cb][0](self.__data[self.__cb[cb][1]])
+                self.__cb[cb][0](self.__data2[self.__cb[cb][1]])
 
     def __lds_reader(self):
         try:
@@ -209,7 +209,7 @@ class LDSSerialManager(object):
             """
             for x in range(4):
                 if self.__get_int(data[6+4*x],data[7+4*x]) > self.__min_reflectivity:
-                    self.__data[(angle+x)% self.NUM_OF_ENTRIES] = min(self.__get_int(data[4+4*x],data[5+4*x]), 20000)
+                    self.__data[(angle+x)% self.NUM_OF_ENTRIES] = min(self.__get_int(data[4+4*x],data[5+4*x]), 50000)
                 else:
                     self.__data[(angle+x)% self.NUM_OF_ENTRIES] = self.__data[(angle + x + self.NUM_OF_ENTRIES - 1)% self.NUM_OF_ENTRIES]
             return True
@@ -237,4 +237,3 @@ class LDSSerialManager(object):
         self.__filter_array[self.__filter_array_index] = curr_val
         self.__filter_array_index = (self.__filter_array_index + 1) % self.__filter_array_size
         return np.median(self.__filter_array, axis=0).tolist()
-        

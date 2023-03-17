@@ -1,6 +1,8 @@
 # LDS-006-Lidar-Sensor-Library
 
-Folks, from software side of things, [this](https://www.jentsch.io/lds-006-lidar-sensor-reverse-engineering/) is a stub. So I brought i some upgrades. To conduct tests I am using Raspberry Pi Model 3/4. Feel free to use the library with any other hardware.
+Folks, from software side of things, [this](https://www.jentsch.io/lds-006-lidar-sensor-reverse-engineering/) is a stub.
+
+So I brought i some upgrades. To conduct tests I am using Raspberry Pi Model 3/4. Feel free to use the library with any other hardware.
 
 ## How to connect hardware
 
@@ -16,8 +18,8 @@ green: UART RX (3v3, Pin 8 @ RPI)
 In this directory: setup a Virtual Environment, then install library
 ```
 sudo apt-get install python3-venv python3-numpy
-python3 -m venv ./venv
-. venv/bin/activate
+python3 -m venv ./venv --system-site-packages
+source venv/bin/activate
 pip install -r requirements.txt
 python setup.py bdist_wheel
 pip install dist/lds006*.whl
@@ -27,7 +29,9 @@ Numpy is used as a system requirement because RPI lacks libraries when installin
 
 ## How to use  library
 
-In this directory: start Virtual Environment, then run 'main.py' **Caution: requires access to hardware**
+In this directory: start Virtual Environment, then run 'main.py'.
+
+**Caution: requires access to hardware** Best practice is to add user to group *dialout*.
 
 ```
 . venv/bin/activate

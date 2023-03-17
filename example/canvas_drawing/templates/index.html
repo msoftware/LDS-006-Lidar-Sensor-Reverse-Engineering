@@ -5,7 +5,7 @@
     <title>LDS-006-Lidar-Sensor-Library - Demonstator</title>
     </head>
     <script type="text/javascript">
-    var max_distance = 20000;
+    var max_distance = 1000;
     var is_started = false;
     var source = null;
     function httpGetAsync(theUrl, callback) {
@@ -32,26 +32,30 @@
             const data = JSON.parse(event.data)
             ctx.clearRect(0, 0, canvas.width, canvas.height);
             ctx.moveTo(x, y * (1 + Math.floor( data.values[0] / max_distance)) );
-            ctx.beginPath();
             console.log("Received data: " + data.values)
             last_good = data.values[0]
-            for(var i = 0; i <= data.values.length; i++) {
+            for(var i = 0; i <= data.values.length;) {
+                ctx.beginPath();
                 var distance = data.values[i%360]
-                //if(distance > max_distance)
-                //    max_distance = distance
-                //max_distance -= 10;
+                i++
+                //i+=3;
+                //var distance = (data.values[i%360] + data.values[(i+2)%360] + data.values[(i+1)%360]) / 3
+                if(distance > max_distance)
+                    max_distance = distance
+                max_distance -= 10;
                 //if (distance > 100) {
                 //    last_good = distance
                 //} else {
                 //    distance = last_good
                 //}
-                    distance = Math.floor( distance / (max_distance) * x);
-                    var angle = i * Math.PI / 180;
-                    var x2 = x + distance * Math.sin(angle);
-                    var y2 = y + distance * Math.cos(angle);
-                    ctx.lineTo(x2, y2);
+                distance = ( distance / (max_distance) * x);
+                var angle = i * Math.PI / 180;
+                var x2 = x + distance * Math.sin(angle);
+                var y2 = y + distance * Math.cos(angle);
+                //    ctx.lineTo(x2, y2);
+                ctx.arc(x2, y2, 2, 0, 2*Math.PI, 0);
+                ctx.stroke();
             }
-            ctx.stroke();
         }
     }
     function pause() {
