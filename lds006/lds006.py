@@ -3,6 +3,7 @@ import serial
 from threading import Thread, Event
 from enum import Enum
 import numpy as np
+import msgLDS_pb2
 
 class LDSSerialManager(object):
     
@@ -63,7 +64,7 @@ class LDSSerialManager(object):
         except Exception as e:
             print("Unknown error occured!")
             raise e
-        self.__min_reflectivity = 10
+        self.__min_reflectivity = 20
         self.__state = self.State.STOPPED
         self.__start_condition = Event()
         self.__has_received__data = Event()
@@ -81,6 +82,8 @@ class LDSSerialManager(object):
         self.__filter_array_index = 0
         self.__filter_array_size = filter_array_size
         filter_array_list = []
+        self.__pb_buffer = msgLDS_pb2.msgLDS()
+        self.__data_counter = 0
         for i in range(self.__filter_array_size):
             filter_array_list.append([20000]*self.NUM_OF_ENTRIES)
         self.__filter_array = np.array(filter_array_list, np.float32)
@@ -127,7 +130,8 @@ class LDSSerialManager(object):
             self.__has_new__data.clear()
             self.__data2 = self.__filter_value(self.__data)
             for cb in self.__cb:
-                self.__cb[cb][0](self.__data2[self.__cb[cb][1]])
+                self.__cb[cb][0](self.__pb_buffer.SerializeToString())
+                self.__pb_buffer.Clear()
 
     def __lds_reader(self):
         try:
@@ -169,13 +173,8 @@ class LDSSerialManager(object):
                         pass
                     else:
                         data = data + self.ser.read(20)
-                        if self.__update_lidar__data(data):
-                            __data_counter += 4
-                            if __data_counter >= 360:
-                                __data_counter = 0
-                                self.__has_new__data.set()
-                        else:
-                            __data_counter = 0
+                        self.__update_lidar__data(data)
+                        
 
         except serial.SerialException as e:
             print("Serial error occured!")
@@ -207,8 +206,18 @@ class LDSSerialManager(object):
                 if reflectivity[x] > min_reflectivity:
                     self.__data[(angle+x)% 360] = distance[x]
             """
+            self.__data_counter += 4
+            if self.__data_counter >= 360:
+                self.__data_counter = 0
+                self.__has_new__data.set()
             for x in range(4):
+                _msg = self.__pb_buffer.data.add()
+                _msg.angle = angle + x
+                _msg.distance = self.__get_int(data[4+4*x],data[5+4*x])
+                _msg.certainty = False
+
                 if self.__get_int(data[6+4*x],data[7+4*x]) > self.__min_reflectivity:
+                    _msg.certainty = True
                     self.__data[(angle+x)% self.NUM_OF_ENTRIES] = min(self.__get_int(data[4+4*x],data[5+4*x]), 50000)
                 else:
                     self.__data[(angle+x)% self.NUM_OF_ENTRIES] = self.__data[(angle + x + self.NUM_OF_ENTRIES - 1)% self.NUM_OF_ENTRIES]
@@ -237,3 +246,4 @@ class LDSSerialManager(object):
         self.__filter_array[self.__filter_array_index] = curr_val
         self.__filter_array_index = (self.__filter_array_index + 1) % self.__filter_array_size
         return np.median(self.__filter_array, axis=0).tolist()
+        

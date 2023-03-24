@@ -24,27 +24,37 @@ if __name__ == "__main__":
         port = "/dev/serial0"
     print("Connecting to: " + port)
     with LDSSerialManager(port) as lds:
-        app = flask.Flask(__name__)
+        app = flask.Flask(__name__, template_folder=".")
         cb_hash = None
         # load main page
         @app.route('/')
         def index():
             return flask.render_template("index.html")
-
+        # load protobuf definitions
+        @app.route('/msgLDS.proto')
+        def pb():
+            return flask.render_template("msgLDS.proto")
+        # load protobuf.js sources
+        @app.route('/protobuf-7.2.2.js')
+        def src_protobuf():
+            return flask.render_template("protobuf-7.2.2.js")
+        # load protobuf.js.map sources
+        @app.route('/protobuf.js.map')
+        def src_protobuf2():
+            return flask.render_template("protobuf.js.map")
         # load update page
         @app.route('/lidar')
         def chart_data(): 
             q_data = Queue(maxsize=3)
             def get_data(x):
-                q_data.put(x)                                        
-                
+                q_data.put(x)
+
             def generate_data():
                 while True:
-                    json_data = json.dumps({'values': q_data.get() })
-                    yield f"data:{json_data}\n\n"        
+                    yield f"data:{q_data.get()}\n\n"        
 
             global cb_hash
-            cb_hash = lds.registerCB(get_data, range(lds.NUM_OF_ENTRIES))
+            cb_hash = lds.registerCB(get_data, lds.NUM_OF_ENTRIES)
             response = flask.Response(flask.stream_with_context(generate_data()), mimetype="text/event-stream")
             response.headers["Cache-Control"] = "no-cache"
             response.headers["X-Accel-Buffering"] = "no"
@@ -62,8 +72,8 @@ if __name__ == "__main__":
         def stop_sensor():
             lds.stop()
             global cb_hash
-            lds.unregisterCB(cb_hash)
+            if cb_hash != None:
+                lds.unregisterCB(cb_hash)
             return "\n\n"
 
-        app.run(debug=True)
-
+        app.run(debug=True, threaded=True)

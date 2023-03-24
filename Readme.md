@@ -2,7 +2,7 @@
 
 Folks, from software side of things, [this](https://www.jentsch.io/lds-006-lidar-sensor-reverse-engineering/) is a stub.
 
-So I brought i some upgrades. To conduct tests I am using Raspberry Pi Model 3/4. Feel free to use the library with any other hardware.
+So I brought some upgrades. To conduct tests I am using Raspberry Pi Model 3/4. Feel free to use the library with any other hardware.
 
 ## How to connect hardware
 
@@ -32,6 +32,8 @@ Numpy is used as a system requirement because RPI lacks libraries when installin
 In this directory: start Virtual Environment, then run 'main.py'.
 
 **Caution: requires access to hardware** Best practice is to add user to group *dialout*.
+
+I would like to introduce a clean interface, thus use [Protocol Buffers](https://protobuf.dev/getting-started/pythontutorial/). Any subscriber message is returned via message encoding specified in `msgLds.proto`.
 
 ```
 . venv/bin/activate

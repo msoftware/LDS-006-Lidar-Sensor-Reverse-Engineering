@@ -1,0 +1,12 @@
+syntax = "proto2";
+
+package msgLDS;
+
+message msgLDS {
+    message containerLDS {
+        required int32 angle = 1;
+        required int32 distance = 2;
+        optional bool certainty = 3 [default = false];
+    }
+    repeated containerLDS data = 1;
+}
