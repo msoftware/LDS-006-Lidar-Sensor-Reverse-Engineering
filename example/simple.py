@@ -18,15 +18,16 @@ if __name__ == "__main__":
         lds.start()
         while True:
             try:
-                # You may use integers, slices, range
+                # You may use integers
                 # via []-Operator or getItem()
-                # by default all 360 entries are returned
-                #print(lds[1])
-                #print(lds[0:360])
-                #print(lds.getItem(range(360)))
-
-                print(lds.getItem())
-
+                print("Data at position 1:" )
+                print(" Using brackets 'lds[1]': " + str(lds[1]))
+                print(" Using function 'lds.getItem(1)': " + str(lds.getItem(1)))
+                print("Number of data points: " + str(len(lds)))
+                actual_len = 0
+                for i in lds:
+                    actual_len+=1
+                print("Number of good data: " + str(actual_len))
                 time.sleep(1)
             except KeyboardInterrupt:
                 break

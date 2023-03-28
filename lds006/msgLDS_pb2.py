@@ -13,15 +13,15 @@ _sym_db = _symbol_database.Default()
 
 
 
-DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n\x0cmsgLDS.proto\x12\x06msgLDS\"~\n\x06msgLDS\x12)\n\x04\x64\x61ta\x18\x01 \x03(\x0b\x32\x1b.msgLDS.msgLDS.containerLDS\x1aI\n\x0c\x63ontainerLDS\x12\r\n\x05\x61ngle\x18\x01 \x02(\x05\x12\x10\n\x08\x64istance\x18\x02 \x02(\x05\x12\x18\n\tcertainty\x18\x03 \x01(\x08:\x05\x66\x61lse')
+DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n\x0cmsgLDS.proto\x12\x06msgLDS\"\x9c\x01\n\x06msgLDS\x12)\n\x04\x64\x61ta\x18\x01 \x03(\x0b\x32\x1b.msgLDS.msgLDS.containerLDS\x12\x0c\n\x04mean\x18\x02 \x01(\x02\x12\x0e\n\x06pstdev\x18\x03 \x01(\x02\x1aI\n\x0c\x63ontainerLDS\x12\r\n\x05\x61ngle\x18\x01 \x02(\x05\x12\x10\n\x08\x64istance\x18\x02 \x02(\x05\x12\x18\n\tcertainty\x18\x03 \x01(\x08:\x05\x66\x61lse')
 
 _builder.BuildMessageAndEnumDescriptors(DESCRIPTOR, globals())
 _builder.BuildTopDescriptorsAndMessages(DESCRIPTOR, 'msgLDS_pb2', globals())
 if _descriptor._USE_C_DESCRIPTORS == False:
 
   DESCRIPTOR._options = None
-  _MSGLDS._serialized_start=24
-  _MSGLDS._serialized_end=150
-  _MSGLDS_CONTAINERLDS._serialized_start=77
-  _MSGLDS_CONTAINERLDS._serialized_end=150
+  _MSGLDS._serialized_start=25
+  _MSGLDS._serialized_end=181
+  _MSGLDS_CONTAINERLDS._serialized_start=108
+  _MSGLDS_CONTAINERLDS._serialized_end=181
 # @@protoc_insertion_point(module_scope)

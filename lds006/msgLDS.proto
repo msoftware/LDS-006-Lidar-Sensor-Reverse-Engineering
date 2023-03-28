@@ -9,4 +9,6 @@ message msgLDS {
         optional bool certainty = 3 [default = false];
     }
     repeated containerLDS data = 1;
+    optional float mean = 2;
+    optional float pstdev = 3;
 }

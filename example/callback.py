@@ -1,9 +1,15 @@
 #!/usr/bin/env python3
 import time, sys
 from lds006.lds006 import LDSSerialManager
+import lds006.msgLDS_pb2 as msgLDS_pb2
 
 def cb(x):
-    print(x)
+    msg = msgLDS_pb2.msgLDS()
+    msg.ParseFromString(x)
+    print("Length of data: " + str(len(x)) + "bytes")
+    print("Measurement point 'msg.data[0]': {\n" + str(msg.data[0]) + "\n}")
+    print("Mean of good data: " + str(msg.mean))
+    print("Standard deviaton of good data: " + str(msg.pstdev))
 
 if __name__ == "__main__":
 
@@ -20,7 +26,7 @@ if __name__ == "__main__":
     with LDSSerialManager(sys.argv[1]) as lds:
         lds.start()
         # Callback is registered and executed every time new data is available. Prints only 1 byte for readability
-        lds.registerCB(cb, 0)
+        lds.registerCB(cb)
 
         while True:
             try:

@@ -1,11 +1,7 @@
 #!/usr/bin/env python3
 import sys, json, flask
 from queue import Queue
-from lds006 import LDSSerialManager
-
-filter_array_size = 4
-min_deviation = 0.02
-max_deviation = 0.1
+from lds006.lds006 import LDSSerialManager
 
 if __name__ == "__main__":
 
@@ -54,7 +50,7 @@ if __name__ == "__main__":
                     yield f"data:{q_data.get()}\n\n"        
 
             global cb_hash
-            cb_hash = lds.registerCB(get_data, lds.NUM_OF_ENTRIES)
+            cb_hash = lds.registerCB(get_data)
             response = flask.Response(flask.stream_with_context(generate_data()), mimetype="text/event-stream")
             response.headers["Cache-Control"] = "no-cache"
             response.headers["X-Accel-Buffering"] = "no"
@@ -77,3 +73,4 @@ if __name__ == "__main__":
             return "\n\n"
 
         app.run(debug=True, threaded=True)
+

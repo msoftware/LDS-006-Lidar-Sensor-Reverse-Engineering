@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+    <html>
+
+    <head>
+    <title>LDS-006-Lidar-Sensor-Library - Demonstator</title>
+    <style>
+        div {
+            /* background: red; */
+            height:10vh;
+        }
+        canvas {
+            height:80vh;
+            width:80vh;
+        }
+    </style>
+    <script src="/protobuf-7.2.2.js"></script>
+    <script type="text/javascript">
+        var is_running = false;
+        var source = null;
+        function httpGetAsync(theUrl, callback) {
+            let xmlHttpReq = new XMLHttpRequest();
+            xmlHttpReq.onreadystatechange = function () {
+            if (xmlHttpReq.readyState == 4 && xmlHttpReq.status == 200) callback(xmlHttpReq.responseText);
+            };
+            xmlHttpReq.open("GET", theUrl, true); // true for asynchronous
+            xmlHttpReq.send(null);
+        }
+        function pb_StrToBin(str) {
+            // expecting data in format b'...'
+            // strip leading b\' and trailing \'
+            str = str.substr(2, str.length - 3)
+
+            // convert to binary
+            result = [];
+            for (var i = 0; i < str.length;) {
+                if (str[i] === "\\"){
+                    i++;
+                    if(str[i] === "x") {
+                        i++;
+                        result.push(parseInt(str[i] + str[i+1], 16));
+                        i+=2;
+                    } else {
+                        if(str[i] === "n") {
+                            result.push(10);
+                        } else if(str[i] === "r") {
+                            result.push(13);
+                        } else if(str[i] === "t") {
+                            result.push(9);
+                        } else if(str[i] === "b") {
+                            result.push(8);
+                        } else if(str[i] === "f") {
+                            result.push(12);
+                        } else if(str[i] === "v") {
+                            result.push(11);
+                        } else if(str[i] === "0") {
+                            result.push(0);
+                        } else if(str[i] === "\\") {
+                            result.push(92);
+                        } else if(str[i] === "'") {
+                            result.push(39);
+                        } else if(str[i] === "\"") {
+                            result.push(34);
+                        } else {
+                            throw "Invalid escape sequence: " + str[i] + " at position " + i;
+                        }
+                        i++;
+                    }
+                } else {
+                    result.push(str[i].charCodeAt());
+                    i++;
+                }
+            }
+            return new Uint8Array(result);
+        }
+        function start() {
+            _start();
+        }
+        
+        async function _start(){
+            window.is_running = true;
+            httpGetAsync('/start', function (data) {});
+
+            if(window.source == null){
+                var canvas = document.getElementById("lidarCanvas");
+                var x = canvas.width / 2;
+                var y = canvas.height / 2;
+                var ctx = canvas.getContext("2d");
+                const root = await protobuf.load("msgLDS.proto");
+                const testMessage = root.lookupType("msgLDS.msgLDS");
+                window.source = new EventSource('/lidar');
+                window.source.onmessage = function(event) {
+                    try {
+                        let data = pb_StrToBin(event.data);
+                        const err = testMessage.verify(data);
+                        if(err) { throw err; }
+                        const msg = testMessage.decode(data);
+                        reference_distance = msg.mean + 2 * msg.pstdev;
+                        console.log(msg)
+                        ctx.clearRect(0, 0, canvas.width, canvas.height);
+                        ctx.strokeStyle = "black";
+                        ctx.beginPath();
+                        let pc = 0;
+                        let x1 = 0, y1; // close the line to first point
+                        for(let i = 0; i < msg.data.length; ++i) {
+                            if(msg.data[i].certainty == false)
+                                continue;
+                            let distance = msg.data[i].distance / reference_distance * x;
+                            let angle = msg.data[i].angle * Math.PI / 180;
+                            let x2 = x + distance * Math.sin(angle);
+                            let y2 = y + distance * Math.cos(angle);
+                            if(x1 == 0){
+                                x1 = x2;
+                                y1 = y2;
+                            }
+                            ctx.lineTo(x2, y2);
+                            ctx.arc(x2, y2, 2, 0, 2*Math.PI, 0);
+                            pc++;
+                        }
+                        ctx.lineTo(x1, y1);
+                        ctx.stroke();
+                        if(document.getElementById("check_allPoints").checked){
+                            reference_distance = 40000;
+                            ctx.strokeStyle = "red";
+                            ctx.beginPath();
+                            x1 = 0;
+                            for(let i = 0; i < msg.data.length; ++i) {
+                                if(msg.data[i].certainty == true)
+                                    continue;
+                                let distance = msg.data[i].distance / reference_distance * x;
+                                let angle = msg.data[i].angle * Math.PI / 180;
+                                let x2 = x + distance * Math.sin(angle);
+                                let y2 = y + distance * Math.cos(angle);
+                                if(x1 == 0){
+                                    x1 = x2;
+                                    y1 = y2;
+                                }
+                                ctx.lineTo(x2, y2);
+                                ctx.arc(x2, y2, 2, 0, 2*Math.PI, 0);
+                                pc++;
+                            }
+                            ctx.lineTo(x1, y1);
+                            ctx.stroke();
+                        }
+                        document.getElementById("p_shownData").innerHTML = "Showing " + pc + " of " + msg.data.length + " data points.";
+                    } catch (e) {
+                        if (e instanceof protobuf.util.ProtocolError) {
+                            console.log("Error (ProtocolError): " + e);
+                        } else {
+                            console.log("Error (other): " + e);
+                            throw e;
+                        }
+                    }
+                }
+            }
+        }
+        function pause() {
+            window.is_running = false;
+            httpGetAsync('/pause', function (data) {});
+        }
+        function stop() {
+            window.source.close();
+            window.source = null;
+            window.running = false;
+            httpGetAsync('/stop', function (data) {});
+        }
+    </script>
+    </head>
+    <body>
+    <div>
+        <h2>LDS-006-Lidar-Sensor-Library - Demonstator</h2>
+        <button onclick="start()">Start</button>
+        <button onclick="stop()">Stop</button>
+        <button onclick="pause()">Pause</button>
+        <input type="checkbox" id="check_allPoints" name="check_allPoints"><label for="check_allPoints">Show all data points</label>
+        <span id="p_shownData"></span>
+    </div>
+    <canvas id="lidarCanvas" width="1000" height="1000" style="border:1px solid #000000;"></canvas>
+    </body>
+    </html>
